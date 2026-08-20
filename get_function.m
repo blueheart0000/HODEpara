@@ -11,7 +11,7 @@ switch FunIndex
         fobj = @spring_obj;
         dim = 3;
         lb = [0.05, 0.25, 2];
-        ub = [2.0,  1.3,  15];
+        ub = [2.0, 1.3, 15];
         
     case 3
         fobj = @pressure_vessel_obj;
@@ -42,25 +42,19 @@ end
 %% ����������Լ�� ��һ�� 
 function cost = welded_beam_obj(x)   %Լ��
     % ԭʼĿ�꺯����Լ��
-    cost = 65535;
-    [f, c, ~] = welded_beam_problem(x);
-    tol = 0;
-    feas = all(c <= tol);
-    if feas ~= 0
-       cost = f;
-    end
-%     [raw_cost, constraints] = welded_beam_design(x);
-%        if constraints(1)> 0 || constraints(2)> 0   || constraints(3)> 0 || constraints(4)> 0 || constraints(5)> 0  || constraints(6)> 0
-%            x = zeros(1,4);
-%            cost = inf;
-%            %fprintf("cost====%.9f\n",1);
-%       
-%        end 
-%        if  constraints(1) <= 0 && constraints(2) <= 0 && constraints(3) <= 0 && constraints(4)<= 0 && constraints(5)<= 0 && constraints(6)<= 0 
-%          
-%            cost = raw_cost;
-%            %  fprintf("cost====%.9f\n",2);
-%        end 
+    cost = inf;
+    [raw_cost, constraints] = welded_beam_design(x);
+       if constraints(1)> 0 || constraints(2)> 0   || constraints(3)> 0 || constraints(4)> 0 || constraints(5)> 0  || constraints(6)> 0  || constraints(7)> 0
+           x = zeros(1,4);
+           cost = inf;
+           %fprintf("cost====%.9f\n",1);
+      
+       end 
+       if  constraints(1) <= 0 && constraints(2) <= 0 && constraints(3) <= 0 && constraints(4)<= 0 && constraints(5)<= 0 && constraints(6)<= 0 && constraints(7)<= 0
+         
+           cost = raw_cost;
+           %  fprintf("cost====%.9f\n",2);
+       end 
        %fprintf("cost====%.9f\n",cost);
 
 end
@@ -68,22 +62,15 @@ end
 %% �����ɣ�Լ�� �ڶ���
 function weight = spring_obj(x)  
     % ԭʼĿ�꺯����Լ��
-    weight = 65535;
-    tol = 0;
-    [f, c, ~] = spring_design_problem(x);
-    feas = all(c <= tol);
-    if feas ~= 0
-        weight = f;
-    end
-    
-%     [raw_weight, constraints] = spring_design(x);
-%        if  constraints(1)> 0 || constraints(2)> 0 || constraints(3) > 0 || constraints(4) > 0
-%            x = zeros(1,3);
-%            weight = inf;
-%        end 
-%        if  constraints(1) <= 0 && constraints(2) <= 0 || constraints(3)<=0 || constraints(4)<=0
-%            weight = raw_weight;
-%        end
+    weight = inf;
+    [raw_weight, constraints] = spring_design(x);
+       if  constraints(1)> 0 || constraints(2)> 0
+           x = zeros(1,3);
+           weight = inf;
+       end 
+       if  constraints(1) <= 0 && constraints(2) <= 0
+           weight = raw_weight;
+       end
  
 end
 
@@ -94,7 +81,7 @@ function cost = pressure_vessel_obj(x)
     [raw_cost, constraints] = pressure_vessel_design(x);
        if constraints(1)> 0 || constraints(2)> 0   || constraints(3)> 0 || constraints(4)> 0
            x = zeros(1,4);
-           cost = 65535;
+           cost = inf;
       
        end 
        if  constraints(1) <= 0 && constraints(2) <= 0 && constraints(3) <= 0 && constraints(4)<= 0
@@ -109,7 +96,7 @@ function weight = truss_obj(x)
     weight  = inf;
     [raw_weight, constraints] = truss_design(x);
     if constraints(1)> 0 || constraints(2)> 0 || constraints(3)> 0
-        weight = 65535;
+        weight = inf;
     end 
     if  constraints(1) <= 0 && constraints(2) <= 0 && constraints(3) <= 0 
         weight = raw_weight;
@@ -123,7 +110,7 @@ function weight = Speed_reducer_obj(x)
     if  constraints(1)> 0 || constraints(2)> 0 || constraints(3)> 0 || constraints(4)> 0 || constraints(5)> 0  || constraints(6)> 0  || constraints(7)> 0  || constraints(8)> 0 ...
             || constraints(9)> 0  || constraints(10)> 0  || constraints(11)> 0
         
-           weight = 65535;
+           weight = inf;
     end 
     if  constraints(1) <= 0 && constraints(2) <= 0 && constraints(3) <= 0 && constraints(4)<= 0 && constraints(5)<= 0 && constraints(6)<= 0 && constraints(7)<= 0 ...
             && constraints(8)<= 0 && constraints(9)<= 0 && constraints(10)<= 0 && constraints(11)<= 0
@@ -137,7 +124,7 @@ function rs =  design_cantilever_beam_obj(x)
     rs = inf;
     [fitness, constraints] = design_cantilever_beam(x);
     if constraints(1) >0
-        rs = 65535;
+        rs = inf;
     else
         rs = fitness;
     end
@@ -171,24 +158,24 @@ function [cost, constraints] = welded_beam_design(x)
      % �м�������
     M = P*(L + x2/2);                  % ���
     R = sqrt( (x2^2)/4 + ((x1 + x3)/2)^2 );    % ��������
-    J = 2*(sqrt(2*x1*x2)*( x2^2/12 + (x1 + x3)^2/4)); % �����Ծ�  %%
+    J = 2*(sqrt(2*x1*x2)*( x2^2/4 + (x1 + x3)^2/4)); % �����Ծ�  %%
     tau_prime = P/sqrt(2*x1*x2);       % ֱ�Ӽ���Ӧ��  %%�����еĲ�ͬ
     tau_double_prime = (M*R)/J;        % ��������Ӧ��
     tau = sqrt(tau_prime^2 + tau_prime*tau_double_prime*x2/R + tau_double_prime^2); % �ܼ���Ӧ��
     sigma = 6*P*L/(x3^2*x4);            % ����Ӧ��
-    P_c   = (4.013*E*sqrt((x3^2*x4^6)/36))/(L^2) * (1 - x3/(2*L)*sqrt(E/(4*G))); % �����غ�
+    P_c = (4.013*E*sqrt((x3^2*x4^6)/36))/(L^2) * (1 - x3/(2*L)*sqrt(E/(4*G))); % �����غ�
     delta = 6*P*L^3/(E*x3^3*x4);        % �˲��Ӷ�
     
     % ����ʽԼ�� (<=0)
-    constraints    = zeros(6,1);
+    constraints = zeros(7,1);
     constraints(1) = tau - tau_max;   % ����Ӧ��Լ��
     constraints(2) = sigma - sigma_max; % ����Ӧ��Լ��
     constraints(3) = x1 - x4;           % ����Լ�� (b >= h)
-    %constraints(4) = delta - delta_max; % �Ӷ�Լ��
-    constraints(4) = 0.10471*x1^2 + 0.04811*x3*x4*(14.0+x2)-5;
-    constraints(5) = delta - delta_max;        % �����غ�Լ��
-    constraints(6) = P-P_c;
-    %constraints(7) = 1.0471* (x1^2) + 0.04811*x3*x4*(14.0 + x2) - 5.0;
+    constraints(4) = delta - delta_max; % �Ӷ�Լ��
+    constraints(5) = P - P_c;        % �����غ�Լ��
+    
+    constraints(6) = 0.125 - x1;
+    constraints(7)=1.0471* (x1^2) + 0.04811*x3*x4*(14.0 + x2) - 5.0;
     
 end
 
@@ -205,8 +192,8 @@ function [weight, constraints] = spring_design(x)
     % ����ʽԼ�� (<=0)
     constraints    = zeros(4,1);
     constraints(1) = 1 - (x3*x2^3)/(71785*x1^4);          
-    constraints(2) = (4*(x2^2) - (x1*x2))/(12566*(x2*(x1^3) - x1^4)) + 1/(5108*(x1^2)) - 1; %rsa������ 
-    constraints(3) = 1-(140.45*x1)/(x2^2*x3); 
+    constraints(2) =(4*(x2^2) - (x1*x3))/(12566*(x2*(x1^3) - x1^4)) + 1/(5108*(x1^2)) - 1; %rsa������ 
+    constraints(3) = 1-(140.54*x1)/(x2^2*x3); 
     constraints(4) = (x1 + x2)/1.5 - 1;
 end
 
